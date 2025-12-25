@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+
+    tools {
+        nodejs 'node18'
+    }
+
+    environment {
+        VERCEL_TOKEN = credentials('vercel-token')
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/pawank39230-boop/nextjs-app-'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+
+        stage('Deploy to Vercel') {
+            steps {
+                sh '''
+                npm install -g vercel
+                vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+                vercel build --prod --token=$VERCEL_TOKEN
+                vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+                '''
+            }
+        }
+    }
+}
